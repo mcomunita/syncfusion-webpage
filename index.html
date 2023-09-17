@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sound design involves creatively selecting, recording, and editing sound effects for various media like cinema, video games, and virtual/augmented reality. One of the most time-consuming steps when designing sound is synchronizing audio with video. In some cases, environmental recordings from video shoots are available, which can aid in the process. However, in video games and animations, no reference audio exists, requiring manual annotation of event timings from the video. 
+        We propose a system to extract repetitive actions onsets from a video, which are then used - in conjunction with audio or textual embeddings - to condition a diffusion model trained to generate a new synchronized sound effects audio track. In this way, we leave complete creative control to the sound designer while removing the burden of synchronization with video. Furthermore, editing the onset track or changing the conditioning embedding requires much less effort than editing the audio track itself, simplifying the sonification process. We provide sound examples, source code, and pretrained models to faciliate reproducibility">
+        <meta name="author" content="Marco Comunità">
+        <title>SyncFusion: Multimodal Onset Synchronized Video to Audio Foley Synthesis</title>
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">    
+    </head>
+  <body>
+    <!-- ========================================================= HEADER ======================================================= -->
+    <div class="jumbotron jumbotron-fluid bg-dark text-center">
+        <div class="container">
+            <h1 class="text-white">SyncFusion: Multimodal Onset Synchronized<br>Video to Audio Foley Synthesis</h1>
+            <p class="lead text-white">
+                <a href="https://mcomunita.github.io/" target="_blank">Marco Comunit&agrave;,</a>
+                <a href="https://www.linkedin.com/in/riccardo-fosco-gramaccioni/?originalSubdomain=it" target="_blank">Riccardo F. Gramaccioni, </a>
+                <a href="https://scholar.google.it/citations?user=UoVX7gUAAAAJ&hl=en" target="_blank">Emilian Postolache, </a><br>
+                <a href="https://www.linkedin.com/in/erodola/" target="_blank">Emanuele Rodol&agrave;, </a>
+                <a href="https://www.linkedin.com/in/danilocomminiello/?originalSubdomain=it" target="_blank">Danilo Comminiello, </a>
+                <a href="http://www.eecs.qmul.ac.uk/~josh/index.htm" target="_blank">Joshua D. Reiss</a> 
+            </p>
+            <a class="btn btn-success" href="" target="_blank" role="button">Paper</a>
+            <a class="btn btn-light" href="https://andrewowens.com/vis" target="_blank" role="button">Dataset</a>
+            <a class="btn btn-danger" href="https://github.com/mcomunita/diffusion-sfx" target="_blank" role="button">Code</a>
+            <!-- <a class="btn btn-light" href="https://youtu.be/NSrpzq-tp0Y" target="_blank" role="button">Video</a> -->
+            <!-- <a class="btn btn-danger" href="https://github.com/mcomunita/neurafuzz" target="_blank" role="button">VST plugin</a> -->
+            
+            <!-- <p></p>
+            <p class="lead text-white text-center">Dataset:</p>
+            <div class="btn-group" role="group">
+                <a type="button" class="btn btn-secondary" href="https://doi.org/10.5281/zenodo.4298000">Custom Fuzz</a>
+                <a type="button" class="btn btn-secondary" href="https://doi.org/10.5281/zenodo.4296040">Mono Continuous</a>
+                <a type="button" class="btn btn-secondary" href="https://doi.org/10.5281/zenodo.4298025">Poly Discrete</a>
+                <a type="button" class="btn btn-secondary" href="https://doi.org/10.5281/zenodo.4298017">Poly Continuous</a>
+              </div> -->
+        </div>
+    </div>
+
+
+    <div class="container" style="width: 100%;">
+        <!-- ========================================================= VIDEO ======================================================= -->
+        <!-- <div class="embed-responsive embed-responsive-16by9" style="width: 70%; margin: auto; text-align: center;">
+            <iframe src="https://www.youtube.com/embed/NSrpzq-tp0Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+        <br> -->
+        <!-- ========================================================= ABSTRACT ======================================================= -->
+        <div class="section">
+            <h2>Abstract</h2>
+            <hr>
+            <p>
+                Sound design involves creatively selecting, recording, and editing sound effects for various media like cinema, video games, and virtual/augmented reality. One of the most time-consuming steps when designing sound is synchronizing audio with video. In some cases, environmental recordings from video shoots are available, which can aid in the process. However, in video games and animations, no reference audio exists, requiring manual annotation of event timings from the video. 
+        We propose a system to extract repetitive actions onsets from a video, which are then used - in conjunction with audio or textual embeddings - to condition a diffusion model trained to generate a new synchronized sound effects audio track. In this way, we leave complete creative control to the sound designer while removing the burden of synchronization with video. Furthermore, editing the onset track or changing the conditioning embedding requires much less effort than editing the audio track itself, simplifying the sonification process. We provide sound examples, source code, and pretrained models to faciliate reproducibility
+            </p>
+        </div>
+        <br>
+    
+    <!-- ========================================================= SAMPLES ======================================================= -->
+    <div class="section">
+        <h2 class="">Samples</h2>
+        <hr>
+        <table class="table table-sm table-borderless">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Audio Effect</th>
+                    <th scope="col">Reference</th>
+                    <th scope="col">LSTM-96</th>
+                    <th scope="col">GCN-3</th>
+                    <th scope="col">GCNTF-3 (ours)</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 22%;">Fuzz - Att: 50ms, Rel: 50ms</td>
+                    <td style="width: 19.5%;">
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz50ms/fuzz50ms-ref.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td style="width: 19.5%;">
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz50ms/fuzz50ms-lstm96.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td style="width: 19.5%;">
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz50ms/fuzz50ms-gcn3.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td style="width: 19.5%;">
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz50ms/fuzz50ms-gcntf3.wav" type="audio/mpeg"></audio>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Fuzz - Att: 10ms, Rel: 250ms</td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz250ms/fuzz250ms-ref.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz250ms/fuzz250ms-lstm96.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz250ms/fuzz250ms-gcn3.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz250ms/fuzz250ms-gcntf3.wav" type="audio/mpeg"></audio>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Fuzz - Att: 1ms, Rel: 2500ms</td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz2500ms/fuzz2500ms-ref.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz2500ms/fuzz2500ms-lstm96.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz2500ms/fuzz2500ms-gcn3.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/fuzz/fuzz2500ms/fuzz2500ms-gcntf3.wav" type="audio/mpeg"></audio>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Comp - Att: 1ms, Rel: 2500ms</td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/comp/comp2500ms/comp2500ms-ref.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/comp/comp2500ms/comp2500ms-lstm96.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/comp/comp2500ms/comp2500ms-gcn3.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/comp/comp2500ms/comp2500ms-gcntf3.wav" type="audio/mpeg"></audio>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>MComp - Att: 1ms, Rel: 1000ms</td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/mcomp/mcomp1000ms/mcomp1000ms-ref.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/mcomp/mcomp1000ms/mcomp1000ms-lstm96.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/mcomp/mcomp1000ms/mcomp1000ms-gcn3.wav" type="audio/mpeg"></audio>
+                    </td>
+                    <td>
+                        <audio controls preload="metadata" style="width: 100%; height: 40px;"><source src="audio/mcomp/mcomp1000ms/mcomp1000ms-gcntf3.wav" type="audio/mpeg"></audio>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+        
+    <!-- ========================================================= CITATION ======================================================= -->
+        <div class="section">
+            <h2>Citation</h2>
+            <hr>
+            <div style="background-color: lightgray;">
+            <pre><code>
+    @inproceedings{10097173,
+        author={Comunità, Marco and Steinmetz, Christian J. and Phan, Huy and Reiss, Joshua D.},
+        booktitle={ICASSP 2023 - 2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)}, 
+        title={Modelling Black-Box Audio Effects with Time-Varying Feature Modulation}, 
+        year={2023},
+        pages={1-5},
+        doi={10.1109/ICASSP49357.2023.10097173}}
+    }</code>
+            </pre>
+            </div>
+        </div>
+    
+    <!-- ========================================================= FOOTER ======================================================= -->
+        <hr>
+        <footer>
+            <p>*Accepted at ICASSP 2023</p>
+            <p>Send feedback and questions to <a href="https://mcomunita.github.io/" target="_blank">Marco Comunit&agrave;</a>.</p>
+        </footer>
+    
+    </div>
+    
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
+</body>
+</html>
